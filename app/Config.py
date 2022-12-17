@@ -5,7 +5,7 @@
 # should use kafka for config changes (else it uses json file)
 kafkaUpdates = False
 # the kafka host we want to send our messages to
-kafkaHost = "kafka:9092"
+kafkaHost = "localhost:9092"
 
 mqttUpdates = False
 mqttHost = "localhost"
@@ -29,7 +29,7 @@ sumoNet = "./app/map/eichstaedt.net.xml"
 initialWaitTicks = 200
 
 # the total number of cars we use in our simulation
-totalCarCounter = 750
+totalCarCounter = 1000
 
 # percentage of cars that are smart
 smartCarPercentage = 0.2

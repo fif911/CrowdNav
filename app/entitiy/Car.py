@@ -48,8 +48,8 @@ class Car:
 
     def setArrived(self, tick):
         """ car arrived at its target, so we add some statistic data """
-
         # import here because python can not handle circular-dependencies
+        print(self.id + " arrived")
         from app.entitiy.CarRegistry import CarRegistry
         # add a round to the car
         self.rounds += 1
@@ -87,6 +87,13 @@ class Car:
             msg["overhead"] = tripOverhead
             msg["complaint"] = self.generate_complaint(tripOverhead)
             RTXForword.publish(msg, Config.kafkaTopicTrips)
+
+        # If there are more cars is simulation than needed - delete the car on its arrival
+        if CarRegistry.totalCarCounter < len(CarRegistry.cars):
+            # We can add some random param to make decrease even more gradual
+            print(self.id + " arrived and will NOT be respawned")
+            del CarRegistry.cars[self.id]
+            self.disabled = True
 
         # if car is still enabled, restart it in the simulation
         if self.disabled is False:
@@ -164,6 +171,7 @@ class Car:
             traci.vehicle.add(self.id, self.__createNewRoute(tick))  # for SUMO v1.2.0
             traci.vehicle.subscribe(self.id, (tc.VAR_ROAD_ID,))
             # ! currently disabled for performance reasons
+            # TODO: investigate what does it change
             # traci.vehicle.setAccel(self.id, self.acceleration)
             # traci.vehicle.setDecel(self.id, self.deceleration)
             # traci.vehicle.setImperfection(self.id, self.imperfection)
