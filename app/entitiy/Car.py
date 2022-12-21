@@ -49,7 +49,7 @@ class Car:
     def setArrived(self, tick):
         """ car arrived at its target, so we add some statistic data """
         # import here because python can not handle circular-dependencies
-        print(self.id + " arrived")
+        # print(self.id + " arrived")
         from app.entitiy.CarRegistry import CarRegistry
         # add a round to the car
         self.rounds += 1
@@ -90,10 +90,12 @@ class Car:
 
         # If there are more cars is simulation than needed - delete the car on its arrival
         if CarRegistry.totalCarCounter < len(CarRegistry.cars):
-            # We can add some random param to make decrease even more gradual
-            print(self.id + " arrived and will NOT be respawned")
-            del CarRegistry.cars[self.id]
-            self.disabled = True
+            population = len(CarRegistry.cars)
+            # probality = random.random()  # probability to nuke 1 car that has status arrived at this tick
+            if random.random() >= CarRegistry.CarDegradationFactor / population:
+                print(self.id + " arrived and will NOT be respawned")
+                del CarRegistry.cars[self.id]
+                self.disabled = True
 
         # if car is still enabled, restart it in the simulation
         if self.disabled is False:

@@ -5,6 +5,7 @@ from app.entitiy.Car import Car
 
 class NullCar:
     """ a car with no function used for error prevention """
+
     def __init__(self):
         pass
 
@@ -27,6 +28,8 @@ class CarRegistry(object):
     totalTripAverage = 0
     # average of all trip overheads (overhead is TotalTicks/PredictedTicks)
     totalTripOverheadAverage = 0
+    # determines if car that arrived will be respawned if graceful decrease in amount of cars needed
+    CarDegradationFactor = 0.3  # (for traffic seasonality simulation)
 
     # @todo on shortest path possible -> minimal value
 
@@ -43,6 +46,13 @@ class CarRegistry(object):
             # to many cars -> remove cars
             (k, v) = CarRegistry.cars.popitem()
             v.remove()
+
+    @classmethod
+    def addCar(cls):
+        cls.carIndexCounter += 1
+        c = Car("car-" + str(CarRegistry.carIndexCounter))
+        cls.cars[c.id] = c
+        c.addToSimulation(0)
 
     @classmethod
     def findById(cls, carID):
