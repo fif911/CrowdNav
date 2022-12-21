@@ -48,6 +48,13 @@ class CarRegistry(object):
             v.remove()
 
     @classmethod
+    def addCar(cls):
+        cls.carIndexCounter += 1
+        c = Car("car-" + str(CarRegistry.carIndexCounter))
+        cls.cars[c.id] = c
+        c.addToSimulation(0)
+
+    @classmethod
     def findById(cls, carID):
         """ returns a car by a given carID """
         try:

@@ -1,4 +1,6 @@
 import json
+import random
+
 import traci
 import traci.constants as tc
 from app.network.Network import Network
@@ -90,6 +92,14 @@ class Simulation(object):
             #     traci.edge.adaptTraveltime(e.id, e.averageDuration)
             # 3)     traci.edge.adaptTraveltime(e.id, (cls.tick-e.lastDurationUpdateTick)) # how old the data is
 
+            if CarRegistry.totalCarCounter > len(CarRegistry.cars):
+                # 1000/200
+                # Graceful addition of cars needed
+                # calculate how much cars we want to add on this tick
+                cars_to_add = random.randint(0, 5)
+                for ca in range(0, cars_to_add):
+                    CarRegistry.addCar()  # adds one car to the simulation
+
             # real time update of config if we are not in kafka mode
             if (cls.tick % 10) == 0:
                 if Config.kafkaUpdates is False and Config.mqttUpdates is False:
@@ -122,8 +132,12 @@ class Simulation(object):
                             print("setting reRouteEveryTicks: " + str(newConf["re_route_every_ticks"]))
                         if "total_car_counter" in newConf:
                             CarRegistry.totalCarCounter = newConf["total_car_counter"]
-                            CarRegistry.applyCarCounter()
                             print("setting totalCarCounter: " + str(newConf["total_car_counter"]))
+                        if "car_counter_is_initial" in newConf:
+                            if newConf["car_counter_is_initial"] is True \
+                                    or newConf["car_counter_is_initial"] == 'true':
+                                CarRegistry.applyCarCounter()
+                                print("Car counter is initial - call apply: " + str(newConf["total_car_counter"]))
                         if "car_degradation_factor" in newConf:
                             CarRegistry.CarDegradationFactor = newConf["car_degradation_factor"]
                             print("setting CarDegradationFactor: " + str(newConf["car_degradation_factor"]))
