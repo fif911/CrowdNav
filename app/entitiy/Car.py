@@ -89,8 +89,8 @@ class Car:
             RTXForword.publish(msg, Config.kafkaTopicTrips)
 
         # If there are more cars is simulation than needed - delete the car on its arrival
-        if CarRegistry.totalCarCounter < len(CarRegistry.cars):
-            # We can add some random param to make decrease even more gradual
+        if CarRegistry.totalCarCounter < len(CarRegistry.cars) and \
+                random.random() >= CarRegistry.CarDegradationFactor:  # random param to make decrease even more gradual
             print(self.id + " arrived and will NOT be respawned")
             del CarRegistry.cars[self.id]
             self.disabled = True

@@ -5,6 +5,7 @@ from app.entitiy.Car import Car
 
 class NullCar:
     """ a car with no function used for error prevention """
+
     def __init__(self):
         pass
 
@@ -27,6 +28,8 @@ class CarRegistry(object):
     totalTripAverage = 0
     # average of all trip overheads (overhead is TotalTicks/PredictedTicks)
     totalTripOverheadAverage = 0
+    # determines if car that arrived will be respawned if graceful decrease in amount of cars needed
+    CarDegradationFactor = 30  # (for traffic seasonality simulation)
 
     # @todo on shortest path possible -> minimal value
 

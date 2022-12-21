@@ -124,6 +124,9 @@ class Simulation(object):
                             CarRegistry.totalCarCounter = newConf["total_car_counter"]
                             CarRegistry.applyCarCounter()
                             print("setting totalCarCounter: " + str(newConf["total_car_counter"]))
+                        if "car_degradation_factor" in newConf:
+                            CarRegistry.CarDegradationFactor = newConf["car_degradation_factor"]
+                            print("setting CarDegradationFactor: " + str(newConf["car_degradation_factor"]))
                         if "edge_average_influence" in newConf:
                             RoutingEdge.edgeAverageInfluence = newConf["edge_average_influence"]
                             print("setting edgeAverageInfluence: " + str(newConf["edge_average_influence"]))
