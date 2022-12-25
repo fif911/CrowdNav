@@ -96,7 +96,7 @@ class Simulation(object):
                 # 1000/200
                 # Graceful addition of cars needed
                 # calculate how much cars we want to add on this tick
-                cars_to_add = random.randint(0, 5)
+                cars_to_add = random.randint(0, 3)
                 for ca in range(0, cars_to_add):
                     CarRegistry.addCar()  # adds one car to the simulation
 

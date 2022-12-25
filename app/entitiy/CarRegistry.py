@@ -28,8 +28,11 @@ class CarRegistry(object):
     totalTripAverage = 0
     # average of all trip overheads (overhead is TotalTicks/PredictedTicks)
     totalTripOverheadAverage = 0
+    # For traffic seasonality simulation:
     # determines if car that arrived will be respawned if graceful decrease in amount of cars needed
     CarDegradationFactor = 0.3  # (for traffic seasonality simulation)
+    # Defines how many ticks it takes to migrate from current amount of cars to a new one
+    CarMigrationTicksAmount = 400  # TODO: Implement in code. Now is not used
 
     # @todo on shortest path possible -> minimal value
 
