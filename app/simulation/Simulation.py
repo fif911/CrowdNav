@@ -207,11 +207,13 @@ class Simulation(object):
                     CarRegistry.totalTripOverheadAverage))
 
             if (cls.tick % 30) == 0:
-                # log to kafka
+                # log to kafka on every 30 ticks to kafkaTopicTick
+
                 msg = {
                     'tick': cls.tick,
                     'traffic_volume': len(CarRegistry.cars),
                     'traffic_target': CarRegistry.totalCarCounter,
+                    'smart_cars_average_speed': CarRegistry.SmartCarsAverageSpeed,
                 }
                 RTXForword.publish(msg, Config.kafkaTopicTick)
 

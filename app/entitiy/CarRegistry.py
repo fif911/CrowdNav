@@ -1,3 +1,6 @@
+import traci
+from scipy import stats
+
 from app import Config
 
 from app.entitiy.Car import Car
@@ -33,6 +36,7 @@ class CarRegistry(object):
     CarDegradationFactor = 0.3  # (for traffic seasonality simulation) # TODO: Implement in code. Now is not used
     # Defines how many ticks it takes to migrate from current amount of cars to a new one
     CarMigrationTicksAmount = 400  # TODO: Implement in code. Now is not used
+    SmartCarsAverageSpeed = 0
 
     # @todo on shortest path possible -> minimal value
 
@@ -69,5 +73,17 @@ class CarRegistry(object):
     @classmethod
     def processTick(cls, tick):
         """ processes the simulation tick on all registered cars """
+        # if (tick % 30) == 0:
+        smart_cars_speeds = []
+
         for key in CarRegistry.cars:
             CarRegistry.cars[key].processTick(tick)
+            # print('key: ' + str(key))
+
+            if (tick % 30) == 0 and CarRegistry.cars[key].smartCar:
+                smart_cars_speeds.append(traci.vehicle.getSpeed(key))
+
+        if (tick % 30) == 0:
+            smart_cars_speeds = [i if i > 1 else 1 for i in smart_cars_speeds]
+            cls.SmartCarsAverageSpeed = stats.hmean(smart_cars_speeds)
+            print(cls.SmartCarsAverageSpeed)
