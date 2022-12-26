@@ -46,7 +46,7 @@ class Car:
         # number of ticks since last reroute / arrival
         self.lastRerouteCounter = 0
 
-    def setArrived(self, tick):
+    def setArrived(self, tick, despawn = False):
         """ car arrived at its target, so we add some statistic data """
         # import here because python can not handle circular-dependencies
         from app.entitiy.CarRegistry import CarRegistry
@@ -91,7 +91,7 @@ class Car:
             RTXForword.publish(msg, Config.kafkaTopicTrips)
 
         # If there are more cars is simulation than needed - delete the car on its arrival
-        if CarRegistry.totalCarCounter < len(CarRegistry.cars):
+        if despawn:
             population = len(CarRegistry.cars)
             # probality = random.random()  # probability to nuke 1 car that has status arrived at this tick
             if random.random() >= CarRegistry.CarDegradationFactor / population:
