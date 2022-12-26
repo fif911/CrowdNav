@@ -13,7 +13,9 @@ from app.entitiy.CarRegistry import CarRegistry
 from app.logging import info
 from app.routing.CustomRouter import CustomRouter
 from app.streaming import RTXConnector
+from app.simulation.PID import PID
 import time
+import collections
 
 # get the current system time
 from app.routing.RoutingEdge import RoutingEdge
@@ -23,6 +25,8 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 class Simulation(object):
     """ here we run the simulation in """
+    # history length
+    historyLength = 300
 
     # the current tick of the simulation
     tick = 0
@@ -57,6 +61,11 @@ class Simulation(object):
     # @profile
     def loop(cls):
         """ loops the simulation """
+        P,I,D = 1/3,1/3,1/3
+        delay = 250
+        pid = PID(P,I,D,normalized = True)
+        remapper = lambda u: u/delay
+        errorHistory = collections.deque(maxlen=cls.historyLength)
 
         # start listening to all cars that arrived at their target
         traci.simulation.subscribe((tc.VAR_ARRIVED_VEHICLES_IDS,))
@@ -72,9 +81,24 @@ class Simulation(object):
             msg["duration"] = duration
             RTXForword.publish(msg, Config.kafkaTopicPerformance)
 
+            current = CarRegistry.cars
+            target = CarRegistry.totalCarCounter
+            error = current - target
+            delta = error-errorHistory[-1] if errorHistory else 0
+            errorHistory.append(error)
+            u = pid.calculate(error,errorHistory,delta)
+            delta = remapper(u)
+
+            removedList = list(traci.simulation.getSubscriptionResults()[122])
+            if delta > 0:
+                p = abs(delta)/len(removedList) if len(removedList) > 0 else 1
+
             # Check for removed cars and re-add them into the system
-            for removedCarId in traci.simulation.getSubscriptionResults()[122]:
-                CarRegistry.findById(removedCarId).setArrived(cls.tick)
+            for removedCarId in removedList:
+                despawn = random.random() < p
+                CarRegistry.findById(removedCarId).setArrived(cls.tick,despawn)
+
+
 
             timeBeforeCarProcess = current_milli_time()
             # let the cars process this step
@@ -92,13 +116,13 @@ class Simulation(object):
             #     traci.edge.adaptTraveltime(e.id, e.averageDuration)
             # 3)     traci.edge.adaptTraveltime(e.id, (cls.tick-e.lastDurationUpdateTick)) # how old the data is
 
-            if CarRegistry.totalCarCounter > len(CarRegistry.cars):
-                # 1000/200
+            if delta < 0:
                 # Graceful addition of cars needed
                 # calculate how much cars we want to add on this tick
-                cars_to_add = random.randint(0, 3)
-                for ca in range(0, cars_to_add):
+                for ca in range(0, abs(delta)):
                     CarRegistry.addCar()  # adds one car to the simulation
+
+
 
             # real time update of config if we are not in kafka mode
             if (cls.tick % 10) == 0:
