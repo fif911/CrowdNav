@@ -3,7 +3,7 @@
 #
 
 # should use kafka for config changes (else it uses json file)
-kafkaUpdates = False
+kafkaUpdates = True
 # the kafka host we want to send our messages to
 kafkaHost = "localhost:9092"
 
@@ -33,8 +33,6 @@ totalCarCounter = 1000
 
 # percentage of cars that are smart
 smartCarPercentage = 0.2
-
-
 
 # runtime dependent variable
 processID = 0
