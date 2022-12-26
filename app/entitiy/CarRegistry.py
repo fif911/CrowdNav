@@ -9,7 +9,7 @@ class NullCar:
     def __init__(self):
         pass
 
-    def setArrived(self, tick):
+    def setArrived(self, tick, despawn=False):
         pass
 
 
@@ -28,8 +28,11 @@ class CarRegistry(object):
     totalTripAverage = 0
     # average of all trip overheads (overhead is TotalTicks/PredictedTicks)
     totalTripOverheadAverage = 0
+    # For traffic seasonality simulation:
     # determines if car that arrived will be respawned if graceful decrease in amount of cars needed
-    CarDegradationFactor = 0.3  # (for traffic seasonality simulation)
+    CarDegradationFactor = 0.3  # (for traffic seasonality simulation) # TODO: Implement in code. Now is not used
+    # Defines how many ticks it takes to migrate from current amount of cars to a new one
+    CarMigrationTicksAmount = 400  # TODO: Implement in code. Now is not used
 
     # @todo on shortest path possible -> minimal value
 
@@ -44,6 +47,7 @@ class CarRegistry(object):
             c.addToSimulation(0)
         while len(CarRegistry.cars) > cls.totalCarCounter:
             # to many cars -> remove cars
+            print("Too many cars (" + str(len(CarRegistry.cars)) + "), removing ...")
             (k, v) = CarRegistry.cars.popitem()
             v.remove()
 

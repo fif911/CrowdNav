@@ -13,3 +13,4 @@ SUMOS.egg-info/*
 spark/project/*
 *.iml
 CrowdNav.egg-info/
+.spyproject
