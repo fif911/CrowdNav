@@ -46,7 +46,7 @@ class Car:
         # number of ticks since last reroute / arrival
         self.lastRerouteCounter = 0
 
-    def setArrived(self, tick, despawn = False):
+    def setArrived(self, tick, despawn=False):
         """ car arrived at its target, so we add some statistic data """
         # import here because python can not handle circular-dependencies
         from app.entitiy.CarRegistry import CarRegistry
@@ -92,12 +92,12 @@ class Car:
 
         # If there are more cars is simulation than needed - delete the car on its arrival
         if despawn:
-            population = len(CarRegistry.cars)
+            # population = len(CarRegistry.cars)
             # probality = random.random()  # probability to nuke 1 car that has status arrived at this tick
-            if random.random() >= CarRegistry.CarDegradationFactor / population:
-                print(self.id + " arrived and will NOT be respawned")
-                del CarRegistry.cars[self.id]
-                self.disabled = True
+            # if random.random() >= CarRegistry.CarDegradationFactor / population:
+            print(self.id + " arrived and will NOT be respawned")
+            del CarRegistry.cars[self.id]
+            self.disabled = True
 
         if len(CarRegistry.cars) == 1:
             self.smartCar = True

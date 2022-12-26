@@ -23,6 +23,8 @@ from app.routing.RoutingEdge import RoutingEdge
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
+BASE_DELAY = 100
+
 
 class Simulation(object):
     """ here we run the simulation in """
@@ -56,21 +58,25 @@ class Simulation(object):
         # apply the configuration from the json file
         cls.applyFileConfig()
         CarRegistry.applyCarCounter()
+        print("Total car counter: " + str(CarRegistry.totalCarCounter))
         cls.loop()
 
     @classmethod
     # @profile
     def loop(cls):
         """ loops the simulation """
-        P,I,D = 1/3,1/3,1/3
-        delay = 250
-        pid = PID(P,I,D,normalized = True)
-        remapper = lambda u: u/delay
+        print("Total car counter: " + str(CarRegistry.totalCarCounter))
+        delay = BASE_DELAY
+        P, I, D = 1 / (0.2 * delay), 1 / (0.2 * delay), 1 / (0.2 * delay)
+        pid = PID(P, I, D, normalize=True)
+        remapper = lambda u: int(round(u))
         errorHistory = collections.deque(maxlen=cls.historyLength)
 
         # start listening to all cars that arrived at their target
         traci.simulation.subscribe((tc.VAR_ARRIVED_VEHICLES_IDS,))
         while 1:
+            # print("Total car counter: " + str(CarRegistry.totalCarCounter))
+
             # Do one simulation step
             cls.tick += 1
             traci.simulationStep()
@@ -82,24 +88,36 @@ class Simulation(object):
             msg["duration"] = duration
             RTXForword.publish(msg, Config.kafkaTopicPerformance)  # TODO
 
-            current = CarRegistry.cars
+            current = len(CarRegistry.cars)
             target = CarRegistry.totalCarCounter
             error = current - target
-            delta = error-errorHistory[-1] if errorHistory else 0
+            delta = error - errorHistory[-1] if errorHistory else 0
             errorHistory.append(error)
-            u = pid.calculate(error,errorHistory,delta)
+            u = pid.calculate(error, errorHistory, delta)
             delta = remapper(u)
 
+            if error != 0 and delta == 0:
+                delay = max(delay - 1, 1)
+            else:
+                delay = BASE_DELAY
+
             removedList = list(traci.simulation.getSubscriptionResults()[122])
-            if delta > 0:
-                p = abs(delta)/len(removedList) if len(removedList) > 0 else 1
+            # p =
+            # if delta > 0:
+            p = delta / len(removedList) if len(removedList) > 0 else 1
 
             # Check for removed cars and re-add them into the system
             for removedCarId in removedList:
                 despawn = random.random() < p
-                CarRegistry.findById(removedCarId).setArrived(cls.tick,despawn)
+                CarRegistry.findById(removedCarId).setArrived(cls.tick, despawn)
 
-
+            if p > 1:
+                # we have to remove more cars then there have been arivals
+                delay = max(delay - 1, 1)
+                delta_to_nuke = delta - len(removedList)
+                for _ in range(delta_to_nuke):
+                    _, removedCarId = CarRegistry.cars.popitem()
+                    CarRegistry.findById(removedCarId).setArrived(cls.tick, despawn=True)
 
             timeBeforeCarProcess = current_milli_time()
             # let the cars process this step
@@ -117,13 +135,17 @@ class Simulation(object):
             #     traci.edge.adaptTraveltime(e.id, e.averageDuration)
             # 3)     traci.edge.adaptTraveltime(e.id, (cls.tick-e.lastDurationUpdateTick)) # how old the data is
 
+            print("current cars: " + str(len(CarRegistry.cars)) + "; Target cars: " + str(CarRegistry.totalCarCounter))
+            print("Delta: " + str(delta))
+            print("U: " + str(u))
+            print("Error: " + str(error))
+            print("Delay: " + str(delay))
+
             if delta < 0:
                 # Graceful addition of cars needed
                 # calculate how much cars we want to add on this tick
                 for ca in range(0, abs(delta)):
                     CarRegistry.addCar()  # adds one car to the simulation
-
-
 
             # real time update of config if we are not in kafka mode
             if (cls.tick % 10) == 0:

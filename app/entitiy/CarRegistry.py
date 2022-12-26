@@ -9,7 +9,7 @@ class NullCar:
     def __init__(self):
         pass
 
-    def setArrived(self, tick):
+    def setArrived(self, tick, despawn=False):
         pass
 
 
