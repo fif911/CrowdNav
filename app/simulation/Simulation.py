@@ -1,5 +1,6 @@
 import json
 import random
+from pprint import pprint
 
 import traci
 import traci.constants as tc
@@ -70,7 +71,7 @@ class Simulation(object):
             cls.lastTick = current_milli_time()
             msg = dict()
             msg["duration"] = duration
-            RTXForword.publish(msg, Config.kafkaTopicPerformance)
+            RTXForword.publish(msg, Config.kafkaTopicPerformance)  # TODO
 
             # Check for removed cars and re-add them into the system
             for removedCarId in traci.simulation.getSubscriptionResults()[122]:
@@ -82,7 +83,7 @@ class Simulation(object):
             # log time it takes for routing
             msg = dict()
             msg["duration"] = current_milli_time() - timeBeforeCarProcess
-            RTXForword.publish(msg, Config.kafkaTopicRouting)
+            RTXForword.publish(msg, Config.kafkaTopicRouting)  # TODO
 
             # if we enable this we get debug information in the sumo-gui using global traveltime
             # should not be used for normal running, just for debugging
@@ -109,6 +110,8 @@ class Simulation(object):
                     # kafka mode
                     newConf = RTXConnector.checkForNewConfiguration()
                     if newConf is not None:
+                        print("New config received through Kafka")
+                        pprint(newConf)
                         if "exploration_percentage" in newConf:
                             CustomRouter.explorationPercentage = newConf["exploration_percentage"]
                             print("setting victimsPercentage: " + str(newConf["exploration_percentage"]))
@@ -141,10 +144,13 @@ class Simulation(object):
                         if "car_degradation_factor" in newConf:
                             CarRegistry.CarDegradationFactor = newConf["car_degradation_factor"]
                             print("setting CarDegradationFactor: " + str(newConf["car_degradation_factor"]))
+                        if "car_migration_ticks_amount" in newConf:
+                            CarRegistry.CarMigrationTicksAmount = newConf["car_migration_ticks_amount"]
+                            print("setting CarMigrationTicksAmount: " + str(newConf["car_migration_ticks_amount"]))
                         if "edge_average_influence" in newConf:
                             RoutingEdge.edgeAverageInfluence = newConf["edge_average_influence"]
                             print("setting edgeAverageInfluence: " + str(newConf["edge_average_influence"]))
-
+                        print("New Config set successfully")
             # print status update if we are not running in parallel mode
             if (cls.tick % 100) == 0 and Config.parallelMode is False:
                 print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
@@ -154,14 +160,12 @@ class Simulation(object):
                     CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
                     CarRegistry.totalTripOverheadAverage))
 
-                # @depricated -> will be removed
-                # # if we are in paralllel mode we end the simulation after 10000 ticks with a result output
-                # if (cls.tick % 10000) == 0 and Config.parallelMode:
-                #     # end the simulation here
-                #     print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
-                #         traci.vehicle.getIDCount()) + "/" + str(
-                #         CarRegistry.totalCarCounter) + " # avgTripDuration: " + str(
-                #         CarRegistry.totalTripAverage) + "(" + str(
-                #         CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
-                #         CarRegistry.totalTripOverheadAverage))
-                #     return
+            if len(CarRegistry.cars) == 0:
+                """This is fool-proof strategy in case simulation in RTX with 0 cars is created"""
+                print("send log to kafka")
+                # log to kafka, empty message
+                msg = dict()
+                msg["tick"] = cls.tick
+                msg["overhead"] = 1
+                msg["complaint"] = 0
+                RTXForword.publish(msg, Config.kafkaTopicTrips)

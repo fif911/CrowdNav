@@ -49,12 +49,14 @@ class Car:
     def setArrived(self, tick):
         """ car arrived at its target, so we add some statistic data """
         # import here because python can not handle circular-dependencies
-        # print(self.id + " arrived")
         from app.entitiy.CarRegistry import CarRegistry
         # add a round to the car
         self.rounds += 1
         self.lastRerouteCounter = 0
         if tick > Config.initialWaitTicks and self.smartCar:  # as we ignore the first 1000 ticks for this
+            # TODO(seasonality): Logging to Kafka happens only if car is smart. If we have not smart cars - logging
+            #  will never happen and the simulation in RTX will be stuck (as it waits for amount of logs to proceed
+            #  to the next one)
             # add a route to the global registry
             CarRegistry.totalTrips += 1
             # add the duration for this route to the global tripAverage
@@ -96,6 +98,9 @@ class Car:
                 print(self.id + " arrived and will NOT be respawned")
                 del CarRegistry.cars[self.id]
                 self.disabled = True
+
+        if len(CarRegistry.cars) == 1:
+            self.smartCar = True
 
         # if car is still enabled, restart it in the simulation
         if self.disabled is False:
@@ -178,12 +183,12 @@ class Car:
             # traci.vehicle.setDecel(self.id, self.deceleration)
             # traci.vehicle.setImperfection(self.id, self.imperfection)
             if self.smartCar:
-                None
+                # None
                 # set color to red
-                # if self.currentRouterResult.isVictim:
-                #     traci.vehicle.setColor(self.id, (0, 255, 0, 0))
-                # else:
-                #     traci.vehicle.setColor(self.id, (255, 0, 0, 0))
+                if self.currentRouterResult.isVictim:
+                    traci.vehicle.setColor(self.id, (0, 255, 255, 0))
+                else:
+                    traci.vehicle.setColor(self.id, (255, 255, 0, 0))
             else:
                 # dump car is using SUMO default routing, so we reroute using the same target
                 # putting the next line left == ALL SUMO ROUTING
