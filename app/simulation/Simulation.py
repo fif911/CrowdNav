@@ -136,10 +136,10 @@ class Simulation(object):
             # 3)     traci.edge.adaptTraveltime(e.id, (cls.tick-e.lastDurationUpdateTick)) # how old the data is
 
             print("current cars: " + str(len(CarRegistry.cars)) + "; Target cars: " + str(CarRegistry.totalCarCounter))
-            print("Delta: " + str(delta))
-            print("U: " + str(u))
-            print("Error: " + str(error))
-            print("Delay: " + str(delay))
+            # print("Delta: " + str(delta))
+            # print("U: " + str(u))
+            # print("Error: " + str(error))
+            # print("Delay: " + str(delay))
 
             if delta < 0:
                 # Graceful addition of cars needed
@@ -205,6 +205,15 @@ class Simulation(object):
                     CarRegistry.totalTripAverage) + "(" + str(
                     CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
                     CarRegistry.totalTripOverheadAverage))
+
+            if (cls.tick % 30) == 0:
+                # log to kafka
+                msg = {
+                    'tick': cls.tick,
+                    'traffic_volume': len(CarRegistry.cars),
+                    'traffic_target': CarRegistry.totalCarCounter,
+                }
+                RTXForword.publish(msg, Config.kafkaTopicTick)
 
             if len(CarRegistry.cars) == 0:
                 """This is fool-proof strategy in case simulation in RTX with 0 cars is created"""

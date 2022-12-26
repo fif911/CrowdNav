@@ -13,6 +13,7 @@ mqttPort = "1883"
 
 # the topic we send the kafka messages to
 kafkaTopicTrips = "crowd-nav-trips"
+kafkaTopicTick = "crowd-nav-tick_updates"
 kafkaTopicPerformance = "crowd-nav-performance"
 kafkaTopicRouting = "crowd-nav-routing"
 
