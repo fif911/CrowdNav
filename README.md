@@ -40,7 +40,7 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
 
 ### PID
 
-* A PID Controller is set in PID.py to increase the car's measured speed back up to the expected speed with the least amount of delay and overshoot. In the code, proportional, integral and derivative are calculated seperatly using error rate and history data.
+* A PID Controller is set in `PID.py` to lower the amount of delay and overshoot. In the code, proportional, integral and derivative are calculated seperatly using existing error and history data.
 
       def calculate(self, err, hist, derivative):
           return self.P * err + \
@@ -51,3 +51,31 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
           self.P = P
           self.I = I
           self.D = D
+          
+### Simulation
+
+* PID controller is used in `Simulation.py`. The simulation start from time tick 0 and keeps coolecting values of each parameters, in every loop we decide whether to add/remove cars and how many cars to add/remove. If the actual arrived cars are less than the PID controller's expectation, we add cars, otherwise we remove cars. This simulation reports current status to Kafka every 30 ticks and print status update every 100 ticks if current running mode is not parallel.
+
+      if (cls.tick % 100) == 0 and Config.parallelMode is False:
+                print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
+                    traci.vehicle.getIDCount()) + "/" + str(
+                    CarRegistry.totalCarCounter) + " # avgTripDuration: " + str(
+                    CarRegistry.totalTripAverage) + "(" + str(
+                    CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
+                    CarRegistry.totalTripOverheadAverage))
+                pass
+
+      if (cls.tick % 30) == 0:
+          # log to kafka on every 30 ticks to kafkaTopicTick
+
+          msg = {
+              'tick': cls.tick,
+              'traffic_volume': len(CarRegistry.cars),
+              'traffic_target': CarRegistry.totalCarCounter,
+              'smart_average_speed_h': CarRegistry._SmartCarsAverageSpeedH,
+              'smart_average_speed_a': CarRegistry._SmartCarsAverageSpeedA,
+              'average_speed_h': CarRegistry._CarsAverageSpeedH,
+              'average_speed_a': CarRegistry._CarsAverageSpeedA,
+          }
+      RTXForword.publish(msg, Config.kafkaTopicTick)
+* Note that the smart cars are controlled by CrowdNav routing algorithm, the normal cars are driving in some random routes to simulate the real-world traffic
