@@ -41,12 +41,12 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
 ### PID
 
 * A PID Controller is set in PID.py to increase the car's measured speed back up to the expected speed with the least amount of delay and overshoot. In the code, proportional, integral and derivative are calculated seperatly using error rate and history data.
-  def calculate(self, err, hist, derivative):
-        return self.P * err + \
-               self.I * sum(hist) / (len(hist) * 1.0 if self.normalized else 1.0) + \
-               self.D * derivative
+      def calculate(self, err, hist, derivative):
+          return self.P * err + \
+                 self.I * sum(hist) / (len(hist) * 1.0 if self.normalized else 1.0) + \
+                 self.D * derivative
 
-    def update(self, P, I, D):
-        self.P = P
-        self.I = I
-        self.D = D
+      def update(self, P, I, D):
+          self.P = P
+          self.I = I
+          self.D = D
