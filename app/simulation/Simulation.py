@@ -64,8 +64,7 @@ class Simulation(object):
     @classmethod
     def loop(cls):
         """ loops the simulation """
-        delay = BASE_DELAY
-        P, I, D = 1 / (0.2 * delay), 1 / (0.2 * delay), 1 / (0.2 * delay)
+        P, I, D = 1 / (0.2 * BASE_DELAY), 1 / (0.2 * BASE_DELAY), 1 / (0.2 * BASE_DELAY)
         pid = PID(P, I, D, normalize=True)
         remapper = lambda u: int(round(u))
         errorHistory = collections.deque(maxlen=cls.historyLength)
@@ -92,11 +91,6 @@ class Simulation(object):
             u = pid.calculate(error, errorHistory, delta)
             delta = remapper(u)
 
-            if error != 0 and delta == 0:
-                delay = max(delay - 1, 1)
-            else:
-                delay = BASE_DELAY
-
             removedList = list(traci.simulation.getSubscriptionResults()[122])
             p = delta / len(removedList) if len(removedList) > 0 else 1
 
@@ -109,7 +103,6 @@ class Simulation(object):
             # (We have to remove more cars than there have been arrivals)
             if p > 1:
                 # Remove cars
-                delay = max(delay - 1, 1)
                 delta_to_nuke = delta - len(removedList)
                 for _ in range(delta_to_nuke):
                     _, removedCarId = CarRegistry.cars.popitem()
