@@ -1,25 +1,21 @@
+import collections
 import json
 import random
-from pprint import pprint
+import time
 
 import traci
 import traci.constants as tc
-from app.network.Network import Network
-
-from app.streaming import RTXForword
 from colorama import Fore
 
 from app import Config
 from app.entitiy.CarRegistry import CarRegistry
 from app.logging import info
 from app.routing.CustomRouter import CustomRouter
-from app.streaming import RTXConnector
-from app.simulation.PID import PID
-import time
-import collections
-
 # get the current system time
 from app.routing.RoutingEdge import RoutingEdge
+from app.simulation.PID import PID
+from app.streaming import RTXConnector
+from app.streaming import RTXForword
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
