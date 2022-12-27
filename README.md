@@ -57,14 +57,7 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
 
 * PID controller is used in `Simulation.py`. The simulation start from time tick 0 and keeps coolecting values of each parameters, in every loop we decide whether to add/remove cars and how many cars to add/remove. If the actual arrived cars are less than the PID controller's expectation, we add cars, otherwise we remove cars. This simulation reports current status to Kafka every 30 ticks and print status update every 100 ticks if current running mode is not parallel.
 
-          print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
-              traci.vehicle.getIDCount()) + "/" + str(
-              CarRegistry.totalCarCounter) + " # avgTripDuration: " + str(
-              CarRegistry.totalTripAverage) + "(" + str(
-              CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
-              CarRegistry.totalTripOverheadAverage))
-
-
+      if (cls.tick % 30) == 0:
           msg = {
               'tick': cls.tick,
               'traffic_volume': len(CarRegistry.cars),
