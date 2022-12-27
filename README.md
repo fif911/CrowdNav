@@ -9,8 +9,8 @@ that can be configured using kafka messages or local JSON config on the fly whil
 Also runtime data is send to a kafka queue to allow stream processing and logger locally to CSV.
 
 ### Version requirements
-* Python version >=3.7 (tested for v3.7)
-* SUMO version >=1.2 (tested for v1.2)
+* Python version = 2.7 (tested for v2.7)
+* SUMO version = 1.14.1 (tested for v1.14.1)
 
 ### Minimal Setup
 * Download the CrowdNav code
@@ -37,3 +37,16 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
 ### Notes
 
 * To let the system stabalize, no message is sent to kafka or CSV in the first 1000 ticks .
+
+### PID
+
+* A PID Controller is set in PID.py to increase the car's measured speed back up to the expected speed with the least amount of delay and overshoot. In the code, proportional, integral and derivative are calculated seperatly using error rate and history data.
+  def calculate(self, err, hist, derivative):
+        return self.P * err + \
+               self.I * sum(hist) / (len(hist) * 1.0 if self.normalized else 1.0) + \
+               self.D * derivative
+
+    def update(self, P, I, D):
+        self.P = P
+        self.I = I
+        self.D = D
