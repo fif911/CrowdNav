@@ -95,7 +95,7 @@ class Car:
             # population = len(CarRegistry.cars)
             # probality = random.random()  # probability to nuke 1 car that has status arrived at this tick
             # if random.random() >= CarRegistry.CarDegradationFactor / population:
-            print(self.id + " arrived and will NOT be respawned")
+            # print(self.id + " arrived and will NOT be respawned")
             del CarRegistry.cars[self.id]
             self.disabled = True
 

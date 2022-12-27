@@ -37,4 +37,6 @@ smartCarPercentage = 0.2
 
 # runtime dependent variable
 processID = 0
-parallelMode = False
+parallelMode = True
+
+#sumoUseGUI = False

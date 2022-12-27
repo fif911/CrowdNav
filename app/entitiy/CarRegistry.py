@@ -86,4 +86,4 @@ class CarRegistry(object):
         if (tick % 30) == 0:
             smart_cars_speeds = [i if i > 1 else 1 for i in smart_cars_speeds]
             cls.SmartCarsAverageSpeed = stats.hmean(smart_cars_speeds)
-            print(cls.SmartCarsAverageSpeed)
+            #print(cls.SmartCarsAverageSpeed)

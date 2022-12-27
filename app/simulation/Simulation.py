@@ -135,7 +135,7 @@ class Simulation(object):
             #     traci.edge.adaptTraveltime(e.id, e.averageDuration)
             # 3)     traci.edge.adaptTraveltime(e.id, (cls.tick-e.lastDurationUpdateTick)) # how old the data is
 
-            print("current cars: " + str(len(CarRegistry.cars)) + "; Target cars: " + str(CarRegistry.totalCarCounter))
+            #print("current cars: " + str(len(CarRegistry.cars)) + "; Target cars: " + str(CarRegistry.totalCarCounter))
             # print("Delta: " + str(delta))
             # print("U: " + str(u))
             # print("Error: " + str(error))
@@ -156,8 +156,8 @@ class Simulation(object):
                     # kafka mode
                     newConf = RTXConnector.checkForNewConfiguration()
                     if newConf is not None:
-                        print("New config received through Kafka")
-                        pprint(newConf)
+                        #print("New config received through Kafka")
+                        #print(newConf)
                         if "exploration_percentage" in newConf:
                             CustomRouter.explorationPercentage = newConf["exploration_percentage"]
                             print("setting victimsPercentage: " + str(newConf["exploration_percentage"]))
@@ -196,15 +196,16 @@ class Simulation(object):
                         if "edge_average_influence" in newConf:
                             RoutingEdge.edgeAverageInfluence = newConf["edge_average_influence"]
                             print("setting edgeAverageInfluence: " + str(newConf["edge_average_influence"]))
-                        print("New Config set successfully")
+                        #print("New Config set successfully")
             # print status update if we are not running in parallel mode
             if (cls.tick % 100) == 0 and Config.parallelMode is False:
-                print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
-                    traci.vehicle.getIDCount()) + "/" + str(
-                    CarRegistry.totalCarCounter) + " # avgTripDuration: " + str(
-                    CarRegistry.totalTripAverage) + "(" + str(
-                    CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
-                    CarRegistry.totalTripOverheadAverage))
+                # #print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
+                #     traci.vehicle.getIDCount()) + "/" + str(
+                #     CarRegistry.totalCarCounter) + " # avgTripDuration: " + str(
+                #     CarRegistry.totalTripAverage) + "(" + str(
+                #     CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
+                #     CarRegistry.totalTripOverheadAverage))
+                pass
 
             if (cls.tick % 30) == 0:
                 # log to kafka on every 30 ticks to kafkaTopicTick
