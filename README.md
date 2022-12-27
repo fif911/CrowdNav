@@ -36,6 +36,7 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
 
 ### Notes
 
+
 * To let the system stabalize, no message is sent to kafka or CSV in the first 1000 ticks .
 
 ### PID
@@ -79,3 +80,4 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
           }
       RTXForword.publish(msg, Config.kafkaTopicTick)
 * Note that the smart cars are controlled by CrowdNav routing algorithm, the normal cars are driving in some random routes to simulate the real-world traffic
+
