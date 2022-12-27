@@ -179,6 +179,7 @@ class Simulation(object):
 
                 msg = {
                     'tick': cls.tick,
+                    'overhead': CarRegistry.totalTripOverheadAverage,
                     'traffic_volume': len(CarRegistry.cars),
                     'traffic_target': CarRegistry.totalCarCounter,
                     'smart_average_speed_h': CarRegistry._SmartCarsAverageSpeedH,
