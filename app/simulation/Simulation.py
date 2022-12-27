@@ -135,7 +135,7 @@ class Simulation(object):
             #     traci.edge.adaptTraveltime(e.id, e.averageDuration)
             # 3)     traci.edge.adaptTraveltime(e.id, (cls.tick-e.lastDurationUpdateTick)) # how old the data is
 
-            #print("current cars: " + str(len(CarRegistry.cars)) + "; Target cars: " + str(CarRegistry.totalCarCounter))
+            # print("current cars: " + str(len(CarRegistry.cars)) + "; Target cars: " + str(CarRegistry.totalCarCounter))
             # print("Delta: " + str(delta))
             # print("U: " + str(u))
             # print("Error: " + str(error))
@@ -156,8 +156,8 @@ class Simulation(object):
                     # kafka mode
                     newConf = RTXConnector.checkForNewConfiguration()
                     if newConf is not None:
-                        #print("New config received through Kafka")
-                        #print(newConf)
+                        # print("New config received through Kafka")
+                        # print(newConf)
                         if "exploration_percentage" in newConf:
                             CustomRouter.explorationPercentage = newConf["exploration_percentage"]
                             print("setting victimsPercentage: " + str(newConf["exploration_percentage"]))
@@ -196,7 +196,7 @@ class Simulation(object):
                         if "edge_average_influence" in newConf:
                             RoutingEdge.edgeAverageInfluence = newConf["edge_average_influence"]
                             print("setting edgeAverageInfluence: " + str(newConf["edge_average_influence"]))
-                        #print("New Config set successfully")
+                        # print("New Config set successfully")
             # print status update if we are not running in parallel mode
             if (cls.tick % 100) == 0 and Config.parallelMode is False:
                 # #print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
@@ -214,7 +214,10 @@ class Simulation(object):
                     'tick': cls.tick,
                     'traffic_volume': len(CarRegistry.cars),
                     'traffic_target': CarRegistry.totalCarCounter,
-                    'smart_cars_average_speed': CarRegistry.SmartCarsAverageSpeed,
+                    'smart_average_speed_h': CarRegistry._SmartCarsAverageSpeedH,
+                    'smart_average_speed_a': CarRegistry._SmartCarsAverageSpeedA,
+                    'average_speed_h': CarRegistry._CarsAverageSpeedH,
+                    'average_speed_a': CarRegistry._CarsAverageSpeedA,
                 }
                 RTXForword.publish(msg, Config.kafkaTopicTick)
 

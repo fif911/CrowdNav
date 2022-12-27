@@ -1,3 +1,4 @@
+import numpy as np
 import traci
 from scipy import stats
 
@@ -36,7 +37,12 @@ class CarRegistry(object):
     CarDegradationFactor = 0.3  # (for traffic seasonality simulation) # TODO: Implement in code. Now is not used
     # Defines how many ticks it takes to migrate from current amount of cars to a new one
     CarMigrationTicksAmount = 400  # TODO: Implement in code. Now is not used
-    SmartCarsAverageSpeed = 0
+
+    # For analysis only. Should be properties
+    _SmartCarsAverageSpeedH = 0
+    _SmartCarsAverageSpeedA = 0
+    _CarsAverageSpeedH = 0
+    _CarsAverageSpeedA = 0
 
     # @todo on shortest path possible -> minimal value
 
@@ -74,16 +80,21 @@ class CarRegistry(object):
     def processTick(cls, tick):
         """ processes the simulation tick on all registered cars """
         # if (tick % 30) == 0:
+        cars_speeds = []
         smart_cars_speeds = []
 
         for key in CarRegistry.cars:
             CarRegistry.cars[key].processTick(tick)
-            # print('key: ' + str(key))
 
-            if (tick % 30) == 0 and CarRegistry.cars[key].smartCar:
-                smart_cars_speeds.append(traci.vehicle.getSpeed(key))
+            if (tick % 30) == 0:
+                cars_speeds.append(traci.vehicle.getSpeed(key))
+                if CarRegistry.cars[key].smartCar:
+                    smart_cars_speeds.append(traci.vehicle.getSpeed(key))
 
         if (tick % 30) == 0:
+            cars_speeds = [i if i > 1 else 1 for i in cars_speeds]
             smart_cars_speeds = [i if i > 1 else 1 for i in smart_cars_speeds]
-            cls.SmartCarsAverageSpeed = stats.hmean(smart_cars_speeds)
-            #print(cls.SmartCarsAverageSpeed)
+            cls._SmartCarsAverageSpeedA = np.mean(smart_cars_speeds)
+            cls._SmartCarsAverageSpeedH = stats.hmean(smart_cars_speeds)
+            cls._CarsAverageSpeedH = np.mean(cars_speeds)
+            cls._CarsAverageSpeedA = stats.hmean(cars_speeds)
