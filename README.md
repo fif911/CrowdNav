@@ -36,4 +36,4 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
 
 ### Notes
 
-* To let the system stabalize, no message is sent to kafka or CSV in the first 1000 ticks .
+* To let the system stabilize, no message is sent to kafka or CSV in the first 1000 ticks .
