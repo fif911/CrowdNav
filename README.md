@@ -63,7 +63,6 @@ A first guide on how to use (i.e. adapt, measure, optimize) CrowdNav with the [R
               CarRegistry.totalTripAverage) + "(" + str(
               CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
               CarRegistry.totalTripOverheadAverage))
-          pass
 
 
           msg = {
