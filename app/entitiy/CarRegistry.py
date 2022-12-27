@@ -32,23 +32,17 @@ class CarRegistry(object):
     totalTripAverage = 0
     # average of all trip overheads (overhead is TotalTicks/PredictedTicks)
     totalTripOverheadAverage = 0
-    # For traffic seasonality simulation:
-    # determines if car that arrived will be respawned if graceful decrease in amount of cars needed
-    CarDegradationFactor = 0.3  # (for traffic seasonality simulation) # TODO: Implement in code. Now is not used
-    # Defines how many ticks it takes to migrate from current amount of cars to a new one
-    CarMigrationTicksAmount = 400  # TODO: Implement in code. Now is not used
 
-    # For analysis only. Should be properties
+    # Traffic seasonality simulation variables:
+    # For analysis only
     _SmartCarsAverageSpeedH = 0
     _SmartCarsAverageSpeedA = 0
     _CarsAverageSpeedH = 0
     _CarsAverageSpeedA = 0
 
-    # @todo on shortest path possible -> minimal value
-
     @classmethod
     def applyCarCounter(cls):
-        """ syncs the value of the carCounter to the SUMO simulation """
+        """ syncs the value of the carCounter to the SUMO simulation immediately """
         while len(CarRegistry.cars) < cls.totalCarCounter:
             # to less cars -> add new
             cls.carIndexCounter += 1

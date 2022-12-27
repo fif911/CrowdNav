@@ -62,7 +62,6 @@ class Simulation(object):
         cls.loop()
 
     @classmethod
-    # @profile
     def loop(cls):
         """ loops the simulation """
         delay = BASE_DELAY
@@ -99,17 +98,17 @@ class Simulation(object):
                 delay = BASE_DELAY
 
             removedList = list(traci.simulation.getSubscriptionResults()[122])
-            # p =
-            # if delta > 0:
             p = delta / len(removedList) if len(removedList) > 0 else 1
 
-            # Check for removed cars and re-add them into the system
+            # Check for arrived cars if we want then to be re-added or not
             for removedCarId in removedList:
-                despawn = random.random() < p
+                despawn = random.random() < p  # decide if car would be respawned or not
                 CarRegistry.findById(removedCarId).setArrived(cls.tick, despawn)
 
+            # If there were fewer arrivals than PID wants to de-spawn cars
+            # (We have to remove more cars than there have been arrivals)
             if p > 1:
-                # we have to remove more cars then there have been arivals
+                # Remove cars
                 delay = max(delay - 1, 1)
                 delta_to_nuke = delta - len(removedList)
                 for _ in range(delta_to_nuke):
@@ -117,26 +116,11 @@ class Simulation(object):
                     CarRegistry.findById(removedCarId).setArrived(cls.tick, despawn=True)
 
             timeBeforeCarProcess = current_milli_time()
-            # let the cars process this step
-            CarRegistry.processTick(cls.tick)
+            CarRegistry.processTick(cls.tick) # let the cars process this step
             # log time it takes for routing
             msg = dict()
             msg["duration"] = current_milli_time() - timeBeforeCarProcess
             RTXForword.publish(msg, Config.kafkaTopicRouting)  # TODO
-
-            # if we enable this we get debug information in the sumo-gui using global traveltime
-            # should not be used for normal running, just for debugging
-            # if (cls.tick % 10) == 0:
-            # for e in Network.routingEdges:
-            # 1)     traci.edge.adaptTraveltime(e.id, 100*e.averageDuration/e.predictedDuration)
-            #     traci.edge.adaptTraveltime(e.id, e.averageDuration)
-            # 3)     traci.edge.adaptTraveltime(e.id, (cls.tick-e.lastDurationUpdateTick)) # how old the data is
-
-            # print("current cars: " + str(len(CarRegistry.cars)) + "; Target cars: " + str(CarRegistry.totalCarCounter))
-            # print("Delta: " + str(delta))
-            # print("U: " + str(u))
-            # print("Error: " + str(error))
-            # print("Delay: " + str(delay))
 
             if delta < 0:
                 # Graceful addition of cars needed
@@ -183,24 +167,18 @@ class Simulation(object):
                                 CarRegistry.applyCarCounter()
                                 print("Car counter is initial. Apply totalCarCounter to " + str(
                                     newConf["total_car_counter"]))
-                        if "car_degradation_factor" in newConf:
-                            CarRegistry.CarDegradationFactor = newConf["car_degradation_factor"]
-                            print("setting CarDegradationFactor: " + str(newConf["car_degradation_factor"]))
-                        if "car_migration_ticks_amount" in newConf:
-                            CarRegistry.CarMigrationTicksAmount = newConf["car_migration_ticks_amount"]
-                            print("setting CarMigrationTicksAmount: " + str(newConf["car_migration_ticks_amount"]))
                         if "edge_average_influence" in newConf:
                             RoutingEdge.edgeAverageInfluence = newConf["edge_average_influence"]
                             print("setting edgeAverageInfluence: " + str(newConf["edge_average_influence"]))
-                        # print("New Config set successfully")
+
             # print status update if we are not running in parallel mode
             if (cls.tick % 100) == 0 and Config.parallelMode is False:
-                # #print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
-                #     traci.vehicle.getIDCount()) + "/" + str(
-                #     CarRegistry.totalCarCounter) + " # avgTripDuration: " + str(
-                #     CarRegistry.totalTripAverage) + "(" + str(
-                #     CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
-                #     CarRegistry.totalTripOverheadAverage))
+                print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
+                    traci.vehicle.getIDCount()) + "/" + str(
+                    CarRegistry.totalCarCounter) + " # avgTripDuration: " + str(
+                    CarRegistry.totalTripAverage) + "(" + str(
+                    CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
+                    CarRegistry.totalTripOverheadAverage))
                 pass
 
             if (cls.tick % 30) == 0:

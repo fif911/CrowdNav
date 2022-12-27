@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-class PID():
+class PID:
     """Software Implementation of a PID Controller"""
 
     def __init__(self, P=0, I=0, D=0, normalize=False):
@@ -19,6 +19,8 @@ class PID():
 
 
 class ForgettingFactorPID(PID):
+    """Software Implementation of a PID Controller with forgetting factor"""
+
     def __init__(self, *args, **kwargs):
         if "Beta" in kwargs:
             self.Beta = kwargs["Beta"]

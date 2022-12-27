@@ -53,10 +53,7 @@ class Car:
         # add a round to the car
         self.rounds += 1
         self.lastRerouteCounter = 0
-        if tick > Config.initialWaitTicks and self.smartCar:  # as we ignore the first 1000 ticks for this
-            # TODO(seasonality): Logging to Kafka happens only if car is smart. If we have not smart cars - logging
-            #  will never happen and the simulation in RTX will be stuck (as it waits for amount of logs to proceed
-            #  to the next one)
+        if tick > Config.initialWaitTicks and self.smartCar:  # as we ignore the first N ticks for this
             # add a route to the global registry
             CarRegistry.totalTrips += 1
             # add the duration for this route to the global tripAverage
@@ -92,10 +89,6 @@ class Car:
 
         # If there are more cars is simulation than needed - delete the car on its arrival
         if despawn:
-            # population = len(CarRegistry.cars)
-            # probality = random.random()  # probability to nuke 1 car that has status arrived at this tick
-            # if random.random() >= CarRegistry.CarDegradationFactor / population:
-            # print(self.id + " arrived and will NOT be respawned")
             del CarRegistry.cars[self.id]
             self.disabled = True
 
