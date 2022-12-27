@@ -30,6 +30,7 @@ def start(processID, parallelMode,useGUI):
     info('# Kafka-Host   -> ' + Config.kafkaHost, Fore.YELLOW)
     info('# Kafka-Topic1 -> ' + Config.kafkaTopicTrips, Fore.YELLOW)
     info('# Kafka-Topic2 -> ' + Config.kafkaTopicPerformance, Fore.YELLOW)
+    info('# Kafka-Topic3 -> ' + Config.kafkaTopicTick, Fore.YELLOW)
 
     # init sending updates to kafka and getting commands from there
     if Config.kafkaUpdates or Config.mqttUpdates:

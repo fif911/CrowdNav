@@ -62,10 +62,8 @@ class Simulation(object):
         cls.loop()
 
     @classmethod
-    # @profile
     def loop(cls):
         """ loops the simulation """
-        print("Total car counter: " + str(CarRegistry.totalCarCounter))
         delay = BASE_DELAY
         P, I, D = 1 / (0.2 * delay), 1 / (0.2 * delay), 1 / (0.2 * delay)
         pid = PID(P, I, D, normalize=True)
@@ -75,8 +73,6 @@ class Simulation(object):
         # start listening to all cars that arrived at their target
         traci.simulation.subscribe((tc.VAR_ARRIVED_VEHICLES_IDS,))
         while 1:
-            # print("Total car counter: " + str(CarRegistry.totalCarCounter))
-
             # Do one simulation step
             cls.tick += 1
             traci.simulationStep()
@@ -102,17 +98,17 @@ class Simulation(object):
                 delay = BASE_DELAY
 
             removedList = list(traci.simulation.getSubscriptionResults()[122])
-            # p =
-            # if delta > 0:
             p = delta / len(removedList) if len(removedList) > 0 else 1
 
-            # Check for removed cars and re-add them into the system
+            # Check for arrived cars if we want then to be re-added or not
             for removedCarId in removedList:
-                despawn = random.random() < p
+                despawn = random.random() < p  # decide if car would be respawned or not
                 CarRegistry.findById(removedCarId).setArrived(cls.tick, despawn)
 
+            # If there were fewer arrivals than PID wants to de-spawn cars
+            # (We have to remove more cars than there have been arrivals)
             if p > 1:
-                # we have to remove more cars then there have been arivals
+                # Remove cars
                 delay = max(delay - 1, 1)
                 delta_to_nuke = delta - len(removedList)
                 for _ in range(delta_to_nuke):
@@ -120,26 +116,11 @@ class Simulation(object):
                     CarRegistry.findById(removedCarId).setArrived(cls.tick, despawn=True)
 
             timeBeforeCarProcess = current_milli_time()
-            # let the cars process this step
-            CarRegistry.processTick(cls.tick)
+            CarRegistry.processTick(cls.tick) # let the cars process this step
             # log time it takes for routing
             msg = dict()
             msg["duration"] = current_milli_time() - timeBeforeCarProcess
             RTXForword.publish(msg, Config.kafkaTopicRouting)  # TODO
-
-            # if we enable this we get debug information in the sumo-gui using global traveltime
-            # should not be used for normal running, just for debugging
-            # if (cls.tick % 10) == 0:
-            # for e in Network.routingEdges:
-            # 1)     traci.edge.adaptTraveltime(e.id, 100*e.averageDuration/e.predictedDuration)
-            #     traci.edge.adaptTraveltime(e.id, e.averageDuration)
-            # 3)     traci.edge.adaptTraveltime(e.id, (cls.tick-e.lastDurationUpdateTick)) # how old the data is
-
-            print("current cars: " + str(len(CarRegistry.cars)) + "; Target cars: " + str(CarRegistry.totalCarCounter))
-            print("Delta: " + str(delta))
-            print("U: " + str(u))
-            print("Error: " + str(error))
-            print("Delay: " + str(delay))
 
             if delta < 0:
                 # Graceful addition of cars needed
@@ -156,8 +137,6 @@ class Simulation(object):
                     # kafka mode
                     newConf = RTXConnector.checkForNewConfiguration()
                     if newConf is not None:
-                        print("New config received through Kafka")
-                        pprint(newConf)
                         if "exploration_percentage" in newConf:
                             CustomRouter.explorationPercentage = newConf["exploration_percentage"]
                             print("setting victimsPercentage: " + str(newConf["exploration_percentage"]))
@@ -186,17 +165,12 @@ class Simulation(object):
                             if newConf["car_counter_is_initial"] is True \
                                     or newConf["car_counter_is_initial"] == 'true':
                                 CarRegistry.applyCarCounter()
-                                print("Car counter is initial - call apply: " + str(newConf["total_car_counter"]))
-                        if "car_degradation_factor" in newConf:
-                            CarRegistry.CarDegradationFactor = newConf["car_degradation_factor"]
-                            print("setting CarDegradationFactor: " + str(newConf["car_degradation_factor"]))
-                        if "car_migration_ticks_amount" in newConf:
-                            CarRegistry.CarMigrationTicksAmount = newConf["car_migration_ticks_amount"]
-                            print("setting CarMigrationTicksAmount: " + str(newConf["car_migration_ticks_amount"]))
+                                print("Car counter is initial. Apply totalCarCounter to " + str(
+                                    newConf["total_car_counter"]))
                         if "edge_average_influence" in newConf:
                             RoutingEdge.edgeAverageInfluence = newConf["edge_average_influence"]
                             print("setting edgeAverageInfluence: " + str(newConf["edge_average_influence"]))
-                        print("New Config set successfully")
+
             # print status update if we are not running in parallel mode
             if (cls.tick % 100) == 0 and Config.parallelMode is False:
                 print(str(Config.processID) + " -> Step:" + str(cls.tick) + " # Driving cars: " + str(
@@ -205,10 +179,24 @@ class Simulation(object):
                     CarRegistry.totalTripAverage) + "(" + str(
                     CarRegistry.totalTrips) + ")" + " # avgTripOverhead: " + str(
                     CarRegistry.totalTripOverheadAverage))
+                pass
+
+            if (cls.tick % 30) == 0:
+                # log to kafka on every 30 ticks to kafkaTopicTick
+
+                msg = {
+                    'tick': cls.tick,
+                    'traffic_volume': len(CarRegistry.cars),
+                    'traffic_target': CarRegistry.totalCarCounter,
+                    'smart_average_speed_h': CarRegistry._SmartCarsAverageSpeedH,
+                    'smart_average_speed_a': CarRegistry._SmartCarsAverageSpeedA,
+                    'average_speed_h': CarRegistry._CarsAverageSpeedH,
+                    'average_speed_a': CarRegistry._CarsAverageSpeedA,
+                }
+                RTXForword.publish(msg, Config.kafkaTopicTick)
 
             if len(CarRegistry.cars) == 0:
                 """This is fool-proof strategy in case simulation in RTX with 0 cars is created"""
-                print("send log to kafka")
                 # log to kafka, empty message
                 msg = dict()
                 msg["tick"] = cls.tick

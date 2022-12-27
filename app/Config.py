@@ -13,6 +13,7 @@ mqttPort = "1883"
 
 # the topic we send the kafka messages to
 kafkaTopicTrips = "crowd-nav-trips"
+kafkaTopicTick = "crowd-nav-tick_updates"
 kafkaTopicPerformance = "crowd-nav-performance"
 kafkaTopicRouting = "crowd-nav-routing"
 
@@ -29,11 +30,13 @@ sumoNet = "./app/map/eichstaedt.net.xml"
 initialWaitTicks = 200
 
 # the total number of cars we use in our simulation
-totalCarCounter = 1000
+totalCarCounter = 500
 
 # percentage of cars that are smart
 smartCarPercentage = 0.2
 
 # runtime dependent variable
 processID = 0
-parallelMode = False
+parallelMode = True
+
+#sumoUseGUI = False
