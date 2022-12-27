@@ -65,7 +65,6 @@ class Simulation(object):
     # @profile
     def loop(cls):
         """ loops the simulation """
-        print("Total car counter: " + str(CarRegistry.totalCarCounter))
         delay = BASE_DELAY
         P, I, D = 1 / (0.2 * delay), 1 / (0.2 * delay), 1 / (0.2 * delay)
         pid = PID(P, I, D, normalize=True)
@@ -75,8 +74,6 @@ class Simulation(object):
         # start listening to all cars that arrived at their target
         traci.simulation.subscribe((tc.VAR_ARRIVED_VEHICLES_IDS,))
         while 1:
-            # print("Total car counter: " + str(CarRegistry.totalCarCounter))
-
             # Do one simulation step
             cls.tick += 1
             traci.simulationStep()
@@ -156,8 +153,6 @@ class Simulation(object):
                     # kafka mode
                     newConf = RTXConnector.checkForNewConfiguration()
                     if newConf is not None:
-                        # print("New config received through Kafka")
-                        # print(newConf)
                         if "exploration_percentage" in newConf:
                             CustomRouter.explorationPercentage = newConf["exploration_percentage"]
                             print("setting victimsPercentage: " + str(newConf["exploration_percentage"]))
@@ -186,7 +181,8 @@ class Simulation(object):
                             if newConf["car_counter_is_initial"] is True \
                                     or newConf["car_counter_is_initial"] == 'true':
                                 CarRegistry.applyCarCounter()
-                                print("Car counter is initial - call apply: " + str(newConf["total_car_counter"]))
+                                print("Car counter is initial. Apply totalCarCounter to " + str(
+                                    newConf["total_car_counter"]))
                         if "car_degradation_factor" in newConf:
                             CarRegistry.CarDegradationFactor = newConf["car_degradation_factor"]
                             print("setting CarDegradationFactor: " + str(newConf["car_degradation_factor"]))
@@ -223,7 +219,6 @@ class Simulation(object):
 
             if len(CarRegistry.cars) == 0:
                 """This is fool-proof strategy in case simulation in RTX with 0 cars is created"""
-                print("send log to kafka")
                 # log to kafka, empty message
                 msg = dict()
                 msg["tick"] = cls.tick

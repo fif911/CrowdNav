@@ -57,7 +57,7 @@ class CarRegistry(object):
             c.addToSimulation(0)
         while len(CarRegistry.cars) > cls.totalCarCounter:
             # to many cars -> remove cars
-            print("Too many cars (" + str(len(CarRegistry.cars)) + "), removing ...")
+            # print("Too many cars (" + str(len(CarRegistry.cars)) + "), removing ...")
             (k, v) = CarRegistry.cars.popitem()
             v.remove()
 

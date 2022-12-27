@@ -30,7 +30,7 @@ sumoNet = "./app/map/eichstaedt.net.xml"
 initialWaitTicks = 200
 
 # the total number of cars we use in our simulation
-totalCarCounter = 1000
+totalCarCounter = 500
 
 # percentage of cars that are smart
 smartCarPercentage = 0.2
