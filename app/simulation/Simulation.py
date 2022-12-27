@@ -60,7 +60,7 @@ class Simulation(object):
         cls.loop()
 
     @classmethod
-    def pidUpdate(errorHistory, pid, remapper):
+    def pidUpdate(cls, errorHistory, pid, remapper):
         current = len(CarRegistry.cars)
         target = CarRegistry.totalCarCounter
         error = current - target
